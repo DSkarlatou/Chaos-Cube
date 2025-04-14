@@ -16,6 +16,8 @@ using namespace std;
 // prototypes
 void KeysCheck();
 void spawnShape();
+void updateAllObjectPositions(float scale, glm::vec3 p, glm::vec3 v, int j);
+void updateObjPosition(float scale, vector<vector<glm::vec3>> object, glm::vec3 p, glm::vec3 v, int j);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void checkOnAxis(int shape, double scale, int index);
@@ -437,6 +439,7 @@ glm::vec3 movement(float scale, int sh, glm::vec3 p, glm::vec3 v, glm::vec3 c, i
     float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     float l = (scale * 10) / 2;
     checkOnAxis(sh, scale, index);
+    //TODO: refactor
     if (sh == 1) // cube
     {
         if (p.x > 100.0f - l || p.x < 0.0f + l)
@@ -544,184 +547,10 @@ glm::vec3 movement(float scale, int sh, glm::vec3 p, glm::vec3 v, glm::vec3 c, i
     }
 
 
-    //TODO: refactor this
     int j = index + 1;
-    if (sh == 1)// if shape is cube
-    {
-        for (int i = j; i < cubes.size(); i++) // checking from i = j, because we don't want to accidentally check the object with itself
-        {
-            separation2.x = p.x + v.x - cubes[i][1].x + cubes[i][3].x;
-            separation2.y = p.y + v.y - cubes[i][1].y + cubes[i][3].y;
-            separation2.z = p.z + v.z - cubes[i][1].z + cubes[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cubes[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
+    updateAllObjectPositions(scale, p, v, j);
 
-                cubes[i][3].x = -cubes[i][3].x;
-                cubes[i][3].y = -cubes[i][3].y;
-                cubes[i][3].z = -cubes[i][3].z;
-            }
-        }
-        for (int i = 0; i < spheres.size(); i++)
-        {
-            separation2.x = p.x + v.x - spheres[i][1].x + spheres[i][3].x;
-            separation2.y = p.y + v.y - spheres[i][1].y + spheres[i][3].y;
-            separation2.z = p.z + v.z - spheres[i][1].z + spheres[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = spheres[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                spheres[i][3].x = -spheres[i][3].x;
-                spheres[i][3].y = -spheres[i][3].y;
-                spheres[i][3].z = -spheres[i][3].z;
-            }
-        }
-        for (int i = 0; i < cylinders.size(); i++)
-        {
-            separation2.x = p.x + v.x - cylinders[i][1].x + cylinders[i][3].x;
-            separation2.y = p.y + v.y - cylinders[i][1].y + cylinders[i][3].y;
-            separation2.z = p.z + v.z - cylinders[i][1].z + cylinders[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cylinders[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                cylinders[i][3].x = -cylinders[i][3].x;
-                cylinders[i][3].y = -cylinders[i][3].y;
-                cylinders[i][3].z = -cylinders[i][3].z;
-            }
-        }
-    }
-
-    if (sh == 2)// if shape is sphere
-    {
-        for (int i = 0; i < cubes.size(); i++)
-        {
-            separation2.x = p.x + v.x - cubes[i][1].x + cubes[i][3].x;
-            separation2.y = p.y + v.y - cubes[i][1].y + cubes[i][3].y;
-            separation2.z = p.z + v.z - cubes[i][1].z + cubes[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cubes[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                cubes[i][3].x = -cubes[i][3].x;
-                cubes[i][3].y = -cubes[i][3].y;
-                cubes[i][3].z = -cubes[i][3].z;
-            }
-        }
-        for (int i = j; i < spheres.size(); i++) // checking from i = j, because we don't want to accidentally check the object with itself
-        {
-            separation2.x = p.x + v.x - spheres[i][1].x + spheres[i][3].x;
-            separation2.y = p.y + v.y - spheres[i][1].y + spheres[i][3].y;
-            separation2.z = p.z + v.z - spheres[i][1].z + spheres[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = spheres[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                spheres[i][3].x = -spheres[i][3].x;
-                spheres[i][3].y = -spheres[i][3].y;
-                spheres[i][3].z = -spheres[i][3].z;
-            }
-        }
-        for (int i = 0; i < cylinders.size(); i++)
-        {
-            separation2.x = p.x + v.x - cylinders[i][1].x + cylinders[i][3].x;
-            separation2.y = p.y + v.y - cylinders[i][1].y + cylinders[i][3].y;
-            separation2.z = p.z + v.z - cylinders[i][1].z + cylinders[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cylinders[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                cylinders[i][3].x = -cylinders[i][3].x;
-                cylinders[i][3].y = -cylinders[i][3].y;
-                cylinders[i][3].z = -cylinders[i][3].z;
-            }
-        }
-    }
-
-    if (sh == 3)// if shape is cylinder
-    {
-        for (int i = 0; i < cubes.size(); i++)
-        {
-            separation2.x = p.x + v.x - cubes[i][1].x + cubes[i][3].x;
-            separation2.y = p.y + v.y - cubes[i][1].y + cubes[i][3].y;
-            separation2.z = p.z + v.z - cubes[i][1].z + cubes[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cubes[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                cubes[i][3].x = -cubes[i][3].x;
-                cubes[i][3].y = -cubes[i][3].y;
-                cubes[i][3].z = -cubes[i][3].z;
-            }
-        }
-        for (int i = j; i < spheres.size(); i++)
-        {
-            separation2.x = p.x + v.x - spheres[i][1].x + spheres[i][3].x;
-            separation2.y = p.y + v.y - spheres[i][1].y + spheres[i][3].y;
-            separation2.z = p.z + v.z - spheres[i][1].z + spheres[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = spheres[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                spheres[i][3].x = -spheres[i][3].x;
-                spheres[i][3].y = -spheres[i][3].y;
-                spheres[i][3].z = -spheres[i][3].z;
-            }
-        }
-        for (int i = j; i < cylinders.size(); i++) //checking from i = j, because we don't want to accidentally check the object with itself
-        {
-            separation2.x = p.x + v.x - cylinders[i][1].x + cylinders[i][3].x;
-            separation2.y = p.y + v.y - cylinders[i][1].y + cylinders[i][3].y;
-            separation2.z = p.z + v.z - cylinders[i][1].z + cylinders[i][3].z;
-            distance2 = sqrt(pow(separation2.x, 2) + pow(separation2.y, 2) + pow(separation2.z, 2));
-            scale2 = cylinders[i][2].x;
-            if (distance2 < (scale * 10) / 2 + (scale2 * 10) / 2)
-            {
-                v.x = -v.x;
-                v.y = -v.y;
-                v.z = -v.z;
-
-                cylinders[i][3].x = -cylinders[i][3].x;
-                cylinders[i][3].y = -cylinders[i][3].y;
-                cylinders[i][3].z = -cylinders[i][3].z;
-            }
-        }
-    }
     //-----------------------------
-
-
 
     glm::vec3 position(v.x, v.y, v.z);
     return position;
@@ -979,6 +808,7 @@ void spawnShape()
     }
 }
 
+
 // if shape exits the stage cube, place it back inside the cube
 void checkOnAxis(int shape, double scale, int index)
 {
@@ -1039,3 +869,37 @@ void checkOnAxis(int shape, double scale, int index)
             cylinders[index][1].z = 100.0f - placeBack;
     }
 }
+
+//NEW FUNCS FOR REFACTORINGS
+
+void updateAllObjectPositions(float scale, glm::vec3 p, glm::vec3 v, int j)
+{
+    updateObjPosition(scale, cubes, p, v, j);
+    updateObjPosition(scale, spheres, p, v, j);
+    updateObjPosition(scale, cylinders, p, v, j);
+}
+
+void updateObjPosition(float scale, vector<vector<glm::vec3>> object, glm::vec3 p, glm::vec3 v, int j)
+{
+    for (int i = j; i < object.size(); i++) //checking from i = j, because we don't want to accidentally check the object with itself
+    {
+        
+        float distance2 = sqrt(pow(p.x + v.x - object[i][1].x + object[i][3].x, 2) + 
+                               pow(p.y + v.y - object[i][1].y + object[i][3].y, 2) + 
+                               pow(p.z + v.z - object[i][1].z + object[i][3].z, 2));
+
+        if (distance2 < (scale * 10) / 2 + (object[i][2].x * 10) / 2)
+        {
+            v.x = -v.x;
+            v.y = -v.y;
+            v.z = -v.z;
+
+            object[i][3].x = -object[i][3].x;
+            object[i][3].y = -object[i][3].y;
+            object[i][3].z = -object[i][3].z;
+        }
+    }
+
+}
+
+
