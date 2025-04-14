@@ -16,16 +16,20 @@ using namespace std;
 // prototypes
 void KeysCheck();
 void spawnShape();
+void checkShapeOnAxis(std::vector<std::vector<glm::vec3>>& object, float placeBack, int index);
 void updateAllObjectPositions(float scale, glm::vec3 p, glm::vec3 v, int j);
 void updateObjPosition(float scale, vector<vector<glm::vec3>> object, glm::vec3 p, glm::vec3 v, int j);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void drawShape(float scale, glm::vec3 color, glm::vec3 sc, glm::vec3 vctr, std::vector<std::vector<glm::vec3>>& shapeVec, int& shapeCount, const std::string& shapeName);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void checkOnAxis(int shape, double scale, int index);
+void checkAllShapesOnAxis(int shape, double scale, int index);
 void makeCube();
 void makeSphere();
 void makeCylinder();
 float getRandomScale();
+void colorShape(std::vector<std::vector<glm::vec3>>& object, int index);
+void handleCollisionAndColor(glm::vec3& p, glm::vec3& v, float l, int sh, int index);
+
 
 glm::vec3  movement(float scale, int sh, glm::vec3 p, glm::vec3 v, glm::vec3 c, int i);
 
@@ -425,6 +429,41 @@ int main()
     return 0;
 }
 
+void colorShape(std::vector<std::vector<glm::vec3>>& object, int index)
+{
+    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+    object[index][0].x = r;
+    object[index][0].y = g;
+    object[index][0].z = b;
+}
+
+void handleCollisionAndColor(glm::vec3& p, glm::vec3& v, float l, int sh, int index)
+{
+    std::vector<std::vector<glm::vec3>>* shapeList = nullptr;
+
+    switch (sh)
+    {
+    case 1: shapeList = &cubes; break;
+    case 2: shapeList = &spheres; break;
+    case 3: shapeList = &cylinders; break;
+    default: return; // unknown shape type
+    }
+
+    auto checkAndReflect = [&](float& coord, float& vel) {
+        if (coord > 100.0f - l || coord < l) {
+            vel = -vel;
+            colorShape(*shapeList, index);
+        }
+        };
+
+    checkAndReflect(p.x, v.x);
+    checkAndReflect(p.y, v.y);
+    checkAndReflect(p.z, v.z);
+}
+
 // Updating positions
 glm::vec3 movement(float scale, int sh, glm::vec3 p, glm::vec3 v, glm::vec3 c, int index)
 {// int sh: tells me the shape, 1->cube, 2->sphere, 3->cylinder 
@@ -435,87 +474,13 @@ glm::vec3 movement(float scale, int sh, glm::vec3 p, glm::vec3 v, glm::vec3 c, i
     glm::vec3 separation2;
     float scale2;
     int totalNumberOfShapes = numberOfCubes + numberOfSpheres + numberOfCylinders;
-    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX); 
     float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     float l = (scale * 10) / 2;
-    checkOnAxis(sh, scale, index);
-    //TODO: refactor
-    if (sh == 1) // cube
-    {
-        if (p.x > 100.0f - l || p.x < 0.0f + l)
-        {
-            v.x = -v.x;
-            cubes[index][0].x = r;
-            cubes[index][0].y = g;
-            cubes[index][0].z = b;
-            
-        }
-        if (p.y > 100.0f - l || p.y < 0.0f + l)
-        {
-            v.y = -v.y;
-            cubes[index][0].x = r;
-            cubes[index][0].y = g;
-            cubes[index][0].z = b;
-        }
-        if (p.z > 100.0f - l || p.z < 0.0f + l)
-        {
-            v.z = -v.z;
-            cubes[index][0].x = r;
-            cubes[index][0].y = g;
-            cubes[index][0].z = b;
-        }
-    }
-
-    if (sh == 2) // sphere
-    {
-        if (p.x > 100.0f - l || p.x < 0.0f + l)
-        {
-            v.x = -v.x;
-            spheres[index][0].x = r;
-            spheres[index][0].y = g;
-            spheres[index][0].z = b;
-        }
-        if (p.y > 100.0f - l || p.y < 0.0f + l)
-        {
-            v.y = -v.y;
-            spheres[index][0].x = r;
-            spheres[index][0].y = g;
-            spheres[index][0].z = b;
-        }
-        if (p.z > 100.0f - l || p.z < 0.0f + l)
-        {
-            v.z = -v.z;
-            spheres[index][0].x = r;
-            spheres[index][0].y = g;
-            spheres[index][0].z = b;
-        }
-    }
-
-    if (sh == 3) // cylinder
-    {
-        if (p.x > 100.0f - l || p.x < 0.0f + l)
-        {
-            v.x = -v.x;
-            cylinders[index][0].x = r;
-            cylinders[index][0].y = g;
-            cylinders[index][0].z = b;
-        }
-        if (p.y > 100.0f - l || p.y < 0.0f + l)
-        {
-            v.y = -v.y;
-            cylinders[index][0].x = r;
-            cylinders[index][0].y = g;
-            cylinders[index][0].z = b;
-        }
-        if (p.z > 100.0f - l || p.z < 0.0f + l)
-        {
-            v.z = -v.z;
-            cylinders[index][0].x = r;
-            cylinders[index][0].y = g;
-            cylinders[index][0].z = b;
-        }
-    }
+    checkAllShapesOnAxis(sh, scale, index);
+    
+    handleCollisionAndColor(p, v, l, sh, index);
 
     // This block is responsible for handling the big ball collision
     separation.x = p.x + v.x - PosSX;
@@ -716,7 +681,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 void drawShape(float scale, glm::vec3 color, glm::vec3 sc, glm::vec3 vctr,
-                std::vector<std::vector<glm::vec3>>& shapeVec, int& shapeCount,
+                std::vector<std::vector<glm::vec3>>& object, int& shapeCount,
                 const std::string& shapeName)
 {
     printf("~~~Spawning a brand new shiny %s ! \n", shapeName.c_str());
@@ -726,11 +691,11 @@ void drawShape(float scale, glm::vec3 color, glm::vec3 sc, glm::vec3 vctr,
     shapeCount += 1;
 
     int index = shapeCount - 1;
-    shapeVec.push_back(std::vector<glm::vec3>());
-    shapeVec[index].push_back(color);
-    shapeVec[index].push_back(startPos);
-    shapeVec[index].push_back(sc);
-    shapeVec[index].push_back(vctr);
+    object.push_back(std::vector<glm::vec3>());
+    object[index].push_back(color);
+    object[index].push_back(startPos);
+    object[index].push_back(sc);
+    object[index].push_back(vctr);
 
     printf("%s STATS: d = %f, position(%f, %f, %f), color(%f, %f, %f) vector(%f, %f, %f)\n",
         shapeName.c_str(), 2.0f * d, d, d, d,
@@ -776,66 +741,46 @@ void spawnShape()
     }
 }
 
+void checkShapeOnAxis(std::vector<std::vector<glm::vec3>>& object, float placeBack, int index)
+{
+    // checking on X axis
+    if (object[index][1].x <= placeBack)
+        object[index][1].x = placeBack;
+    if (object[index][1].x >= 100.0f - placeBack)
+        object[index][1].x = 100.0f - placeBack;
+    // checking on Y axis
+    if (object[index][1].y <= placeBack)
+        object[index][1].y = placeBack;
+    if (object[index][1].y >= 100.0f - placeBack)
+        object[index][1].y = 100.0f - placeBack;
+    // checking on Z axis
+    if (object[index][1].z <= placeBack)
+        object[index][1].z = placeBack;
+    if (object[index][1].z >= 100.0f - placeBack)
+        object[index][1].z = 100.0f - placeBack;
+}
 
 // if shape exits the stage cube, place it back inside the cube
-void checkOnAxis(int shape, double scale, int index)
+void checkAllShapesOnAxis(int shape, double scale, int index)
 {
     float placeBack = scale * 10 / 2;
     //TODO; refactor
-    if (shape == 1)
+    switch(shape)
     {
-        // checking on X axis
-        if (cubes[index][1].x <= placeBack)
-            cubes[index][1].x = placeBack;
-        if (cubes[index][1].x >= 100.0f - placeBack)
-            cubes[index][1].x = 100.0f - placeBack;
-        // checking on Y axis
-        if (cubes[index][1].y <= placeBack)
-            cubes[index][1].y = placeBack;
-        if (cubes[index][1].y >= 100.0f - placeBack)
-            cubes[index][1].y = 100.0f - placeBack;
-        // checking on Z axis
-        if (cubes[index][1].z <= placeBack)
-            cubes[index][1].z = placeBack;
-        if (cubes[index][1].z >= 100.0f - placeBack)
-            cubes[index][1].z = 100.0f - placeBack;
+    case 1:
+        checkShapeOnAxis(cubes, placeBack, index);
+        break;
+    case 2:
+        checkShapeOnAxis(spheres, placeBack, index);
+        break;
+    case 3:
+        checkShapeOnAxis(cylinders, placeBack, index);
+        break;
+    default:
+        printf("Unknown shape type!\n");
+        break;
     }
-    if (shape == 2)
-    {
-        // checking on X axis
-        if (spheres[index][1].x <= placeBack)
-            spheres[index][1].x = placeBack;
-        if (spheres[index][1].x >= 100.0f - placeBack)
-            spheres[index][1].x = 100.0f - placeBack;
-        // checking on Y axis
-        if (spheres[index][1].y <= placeBack)
-            spheres[index][1].y = placeBack;
-        if (spheres[index][1].y >= 100.0f - placeBack)
-            spheres[index][1].y = 100.0f - placeBack;
-        // checking on Z axis
-        if (spheres[index][1].z <= placeBack)
-            spheres[index][1].z = placeBack;
-        if (spheres[index][1].z >= 100.0f - placeBack)
-            spheres[index][1].z = 100.0f - placeBack;
-    }
-    if (shape == 3)
-    {
-        // checking on X axis
-        if (cylinders[index][1].x <= placeBack)
-            cylinders[index][1].x = placeBack;
-        if (cylinders[index][1].x >= 100.0f - placeBack)
-            cylinders[index][1].x = 100.0f - placeBack;
-        // checking on Y axis
-        if (cylinders[index][1].y <= placeBack)
-            cylinders[index][1].y = placeBack;
-        if (cylinders[index][1].y >= 100.0f - placeBack)
-            cylinders[index][1].y = 100.0f - placeBack;
-        // checking on Z axis
-        if (cylinders[index][1].z <= placeBack)
-            cylinders[index][1].z = placeBack;
-        if (cylinders[index][1].z >= 100.0f - placeBack)
-            cylinders[index][1].z = 100.0f - placeBack;
-    }
+    
 }
 
 //NEW FUNCS FOR REFACTORINGS
