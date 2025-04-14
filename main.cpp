@@ -19,6 +19,7 @@ void spawnShape();
 void updateAllObjectPositions(float scale, glm::vec3 p, glm::vec3 v, int j);
 void updateObjPosition(float scale, vector<vector<glm::vec3>> object, glm::vec3 p, glm::vec3 v, int j);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void drawShape(float scale, glm::vec3 color, glm::vec3 sc, glm::vec3 vctr, std::vector<std::vector<glm::vec3>>& shapeVec, int& shapeCount, const std::string& shapeName);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void checkOnAxis(int shape, double scale, int index);
 void makeCube();
@@ -714,6 +715,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+void drawShape(float scale, glm::vec3 color, glm::vec3 sc, glm::vec3 vctr,
+                std::vector<std::vector<glm::vec3>>& shapeVec, int& shapeCount,
+                const std::string& shapeName)
+{
+    printf("~~~Spawning a brand new shiny %s ! \n", shapeName.c_str());
+
+    float d = (scale * 10) / 2;
+    glm::vec3 startPos(d, d, d);
+    shapeCount += 1;
+
+    int index = shapeCount - 1;
+    shapeVec.push_back(std::vector<glm::vec3>());
+    shapeVec[index].push_back(color);
+    shapeVec[index].push_back(startPos);
+    shapeVec[index].push_back(sc);
+    shapeVec[index].push_back(vctr);
+
+    printf("%s STATS: d = %f, position(%f, %f, %f), color(%f, %f, %f) vector(%f, %f, %f)\n",
+        shapeName.c_str(), 2.0f * d, d, d, d,
+        color.x, color.y, color.z,
+        vctr.x, vctr.y, vctr.z);
+}
+
 void spawnShape()
 {
     int shapeToMake = 1 + static_cast <int> (rand()) / (static_cast <int> (RAND_MAX / (4 - 1))); //will be randomized
@@ -736,75 +760,19 @@ void spawnShape()
     glm::vec3 sc(scale, 0.0f, 0.0f);                  // this will be used when drawing
     glm::vec3 vctr(vx, vy, vz);                       // vector
   
-    //TODO: refactor
-    if (shapeToMake == 1)
-    {
-        printf("~~~Spawning a brand new shiny cube ! \n");
-        float l = (scale * 10) / 2;;
-        numberOfCubes += 1; // increment for the future
-
-        glm::vec3 startPos(l, l, l);
-
-        for (int i = numberOfCubes - 1; i < numberOfCubes; i++)
-        {
-            cubes.push_back(std::vector<glm::vec3>()); // magic line
-            for (int j = 0; j < 1; j++)
-            {
-                cubes[i].push_back(color);
-                cubes[i].push_back(startPos);
-                cubes[i].push_back(sc);
-                cubes[i].push_back(vctr);
-            }
-        }
-        printf("scale = %f\n", scale);
-        printf("CUBE STATS: d = %f, position(%f, %f, %f), color(%f, %f, %f) vector(%f, %f, %f)\n", 2.0 * l, l, l, l, r, g, b, vx,vy,vz);
-    }
-
-    if (shapeToMake == 2) 
-    {
-        printf("~~~Spawning a brand new shiny sphere !\n");
-        
-        float l = (scale * 10) / 2;
-        glm::vec3 startPos(l, l, l);
-        numberOfSpheres += 1; // increment for the future
-        
-        // pushing onto "vector"
-        for (int i = numberOfSpheres-1; i < numberOfSpheres; i++)
-        {
-            spheres.push_back(std::vector<glm::vec3>()); // magic line
-            for (int j = 0; j < 1; j++)
-            {
-                spheres[i].push_back(color);
-                spheres[i].push_back(startPos);
-                spheres[i].push_back(sc);
-                spheres[i].push_back(vctr);
-            }
-        }
-        printf("SPHERE STATS: d = %f, position(%f, %f, %f), color(%f, %f, %f) vector(%f, %f, %f)\n", 2.0 * l, l, l, l, r, g, b, vx, vy, vz);
-    }
-
-    if (shapeToMake == 3)
-    {
-        printf("~~~Spawning a brand new shiny cylinder ! \n");
-        
-        float h = (scale * 10)/2;
-        numberOfCylinders += 1; // increment for the future
-        glm::vec3 startPos(h, h, h);
-        // pushing onto "vector"
-        for (int i = numberOfCylinders - 1; i < numberOfCylinders; i++)
-        {
-            cylinders.push_back(std::vector<glm::vec3>()); // magic line
-            for (int j = 0; j < 1; j++)
-            {
-                cylinders[i].push_back(color);
-                cylinders[i].push_back(startPos);
-                cylinders[i].push_back(sc);
-                cylinders[i].push_back(vctr);
-            }
-        }
-
-        printf("CYLINDER STATS: d = %f, position(%f, %f, %f), color(%f, %f, %f) vector(%f, %f, %f)\n", 2.0 * h, h, h, h, r, g, b, vx, vy, vz);
-
+    switch (shapeToMake) {
+    case 1:
+        drawShape(scale, color, sc, vctr, cubes, numberOfCubes, "cube");
+        break;
+    case 2:
+        drawShape(scale, color, sc, vctr, spheres, numberOfSpheres, "sphere");
+        break;
+    case 3:
+        drawShape(scale, color, sc, vctr, cylinders, numberOfCylinders, "cylinder");
+        break;
+    default:
+        printf("Unknown shape type!\n");
+        break;
     }
 }
 
